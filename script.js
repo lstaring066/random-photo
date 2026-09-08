@@ -6,13 +6,11 @@ const supabaseKey =
 "sb_publishable_M9eL0D5OIW_NpOYkm8NaLw_d-o7bKHA"
 
 
-
 const client =
 supabase.createClient(
 supabaseUrl,
 supabaseKey
 )
-
 
 
 const button =
@@ -30,8 +28,7 @@ button.onclick = async ()=>{
 button.innerHTML="Loading..."
 
 
-
-let {data,error}=await client
+const {data,error}=await client
 .from("photos")
 .select("*")
 
@@ -41,9 +38,15 @@ if(error){
 
 console.log(error)
 
+button.innerHTML="Error"
+
 return
 
 }
+
+
+
+console.log(data)
 
 
 
@@ -59,14 +62,12 @@ Math.random()*data.length
 image.classList.remove("show")
 
 
-setTimeout(()=>{
 
+setTimeout(()=>{
 
 image.src=random.url
 
-
 image.classList.add("show")
-
 
 },100)
 
