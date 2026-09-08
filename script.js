@@ -4,7 +4,7 @@ const supabaseUrl =
 
 
 const supabaseKey =
-"你的anon key"
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ycGVkZmNlem12cnJqaGhmaWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MjkyMTEsImV4cCI6MjEwNDQwNTIxMX0.n1f7yX3FaxWMm4IcBNfgclAiGs07vi-eDlJc5JKMrJA"
 
 
 
