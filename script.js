@@ -8,9 +8,10 @@ const supabaseKey =
 
 const client =
 supabase.createClient(
-supabaseUrl,
-supabaseKey
+    supabaseUrl,
+    supabaseKey
 )
+
 
 
 const button =
@@ -20,77 +21,133 @@ document.getElementById("btn")
 const image =
 document.getElementById("photo")
 
-let lastPhoto = null;
+
+// 保存所有照片
+let photos = [];
+
+
+// 保存已经显示过的照片id
+let usedPhotos = [];
+
+
+// 初始化：网页打开时读取一次数据库
+async function loadPhotos(){
+
+    const {data,error}=await client
+    .from("photos")
+    .select("*")
+
+
+    if(error){
+
+        console.log(error)
+
+        return;
+
+    }
+
+
+    photos = data;
+
+
+    console.log(
+        "加载照片数量:",
+        photos.length
+    )
+
+}
+
+
+
+loadPhotos();
+
+
+
 
 
 button.onclick = async ()=>{
 
 
-button.innerHTML="Loading..."
-
-
-const {data,error}=await client
-.from("photos")
-.select("*")
+    button.innerHTML="Loading..."
 
 
 
-if(error){
+    // 防止还没加载完成就点击
+    if(photos.length===0){
 
-console.log(error)
+        button.innerHTML="No Photos"
 
-button.innerHTML="Error"
+        return;
 
-return
-
-}
-
-
-
-console.log(data)
+    }
 
 
 
-let random;
+    // 如果全部照片都看过了
+    // 清空记录，重新开始
+    if(
+        usedPhotos.length >= photos.length
+    ){
 
+        usedPhotos=[];
 
-do {
-
-random =
-data[
-Math.floor(
-Math.random()*data.length
-)
-];
-
-
-} while(
-data.length > 1 &&
-random.id === lastPhoto
-);
-
-
-lastPhoto = random.id;
-
-
-image.style.opacity=0;
-
-
-setTimeout(()=>{
-
-image.src=random.url;
-
-image.onload=()=>{
-
-image.style.opacity=1;
-
-}
-
-},500)
+    }
 
 
 
-button.innerHTML="✦ Discover"
+    // 找出还没显示过的照片
+
+    let availablePhotos =
+    photos.filter(
+        photo =>
+        !usedPhotos.includes(photo.id)
+    );
+
+
+
+    // 随机选择
+
+    let random =
+    availablePhotos[
+        Math.floor(
+            Math.random()*availablePhotos.length
+        )
+    ];
+
+
+
+    // 记录已经显示
+
+    usedPhotos.push(random.id);
+
+
+
+    // 淡出
+
+    image.style.opacity=0;
+
+
+
+    setTimeout(()=>{
+
+
+        image.src=random.url;
+
+
+
+        image.onload=()=>{
+
+            image.style.opacity=1;
+
+        }
+
+
+
+    },300);
+
+
+
+    button.innerHTML="✦ Discover"
 
 
 }
