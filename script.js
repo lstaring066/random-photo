@@ -1,4 +1,3 @@
-console.log("开始");
 const supabaseUrl =
 "https://nrpedfcezmvrrjhhfihy.supabase.co"
 
