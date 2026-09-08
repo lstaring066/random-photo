@@ -20,6 +20,7 @@ document.getElementById("btn")
 const image =
 document.getElementById("photo")
 
+let lastPhoto = null;
 
 
 button.onclick = async ()=>{
@@ -50,13 +51,26 @@ console.log(data)
 
 
 
-let random =
+let random;
+
+
+do {
+
+random =
 data[
 Math.floor(
 Math.random()*data.length
 )
-]
+];
 
+
+} while(
+data.length > 1 &&
+random.id === lastPhoto
+);
+
+
+lastPhoto = random.id;
 
 
 image.style.opacity=0;
