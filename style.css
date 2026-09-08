@@ -165,43 +165,62 @@ fade .8s;
 button{
 
 
-border:none;
-
 padding:
 
-16px 45px;
+18px 55px;
 
 
-border-radius:50px;
+border-radius:
+
+999px;
+
+
+border:
+
+1px solid rgba(255,255,255,.4);
+
+
+background:
+
+rgba(255,255,255,.15);
+
+
+backdrop-filter:
+
+blur(10px);
+
+
+color:white;
 
 
 font-size:18px;
 
 
+letter-spacing:2px;
+
+
 cursor:pointer;
 
 
-background:white;
-
-
-color:#111;
-
-
-transition:.3s;
+transition:.4s;
 
 
 }
 
 
-
 button:hover{
 
+
+background:white;
+
+
+color:black;
+
+
 transform:
+
 translateY(-5px);
 
-
-box-shadow:
-0 10px 30px rgba(255,255,255,.3);
 
 }
 
