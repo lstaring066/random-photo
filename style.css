@@ -21,12 +21,19 @@ justify-content:center;
 align-items:center;
 
 
-background:
+background-image:
 linear-gradient(
-135deg,
-#0f172a,
-#1e293b
-);
+rgba(0,0,0,0.45),
+rgba(0,0,0,0.45)
+),
+url("bg.jpg");
+
+
+background-size:cover;
+
+background-position:center;
+
+background-attachment:fixed;
 
 
 color:white;
@@ -89,16 +96,30 @@ margin-bottom:30px;
 
 width:100%;
 
-height:420px;
+height:450px;
 
 overflow:hidden;
 
-border-radius:25px;
 
-margin-bottom:30px;
+border-radius:30px;
 
 
-background:#111827;
+position:relative;
+
+
+background:
+rgba(255,255,255,0.1);
+
+
+box-shadow:
+
+0 25px 80px rgba(0,0,0,.5);
+
+
+border:
+
+1px solid rgba(255,255,255,.2);
+
 
 }
 
@@ -106,20 +127,31 @@ background:#111827;
 
 .photo-box img{
 
-
 width:100%;
 
 height:100%;
 
+
 object-fit:cover;
 
 
-transition:.6s;
+border-radius:30px;
+
+
+transition:
+
+transform .8s ease,
+opacity .8s ease;
 
 
 }
 
+.photo-box:hover img{
 
+transform:
+scale(1.05);
+
+}
 
 .photo-box img.show{
 
