@@ -59,17 +59,20 @@ Math.random()*data.length
 
 
 
-image.classList.remove("show")
-
+image.style.opacity=0;
 
 
 setTimeout(()=>{
 
-image.src=random.url
+image.src=random.url;
 
-image.classList.add("show")
+image.onload=()=>{
 
-},100)
+image.style.opacity=1;
+
+}
+
+},500)
 
 
 
