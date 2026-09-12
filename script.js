@@ -75,7 +75,7 @@ button.onclick = async ()=>{
     // 防止还没加载完成就点击
     if(photos.length===0){
 
-        button.innerHTML="No Photos"
+        button.innerHTML="Waiting"
 
         return;
 
