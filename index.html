@@ -1,61 +1,45 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Random Memories</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#141a19">
+  <meta name="description" content="在随机中，遇见美好。翻开一张照片，重逢一个值得珍藏的瞬间。">
+  <title>Random Memories · 遇见美好</title>
+  <link rel="stylesheet" href="style.css?v=20260922">
+  <script src="script.js?v=20260922" defer></script>
 </head>
-
-
 <body>
-
-
-<div class="container">
-
-
-<h1>
-Random Memories
-</h1>
-
-
-<p>
-点击按钮，发现一张随机照片
-</p>
-
-
-
-<div class="photo-box">
-
-<img id="photo"
-src="bg.jpg"
-alt="随机照片">
-
-</div>
-
-
-
-<button id="btn">
-
-✦ Discover
-
-</button>
-
-
-</div>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="script.js"></script>
-
-
+  <div class="backdrop" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="page">
+    <header class="header">
+      <a class="brand" href="./" aria-label="Random Memories 首页"><span class="brand-mark">✳</span> RANDOM MEMORIES<span class="brand-dot">®</span></a>
+      <span class="header-note">A LITTLE CHANCE. A LITTLE WONDER.</span>
+      <span class="archive-tag"><i></i> THE MEMORY COLLECTION</span>
+    </header>
+    <main class="experience">
+      <section class="intro" aria-labelledby="heading">
+        <p class="eyebrow"><span></span> LET LIFE SURPRISE YOU</p>
+        <h1 id="heading">在随机中，<br>遇见<span class="serif">美好。</span></h1>
+        <p class="description">有些瞬间，值得再次遇见。<br>把下一张，交给偶然。</p>
+        <button id="btn" class="discover" type="button" disabled><span id="button-label">正在寻找回忆…</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+        <p id="status" class="status" role="status" aria-live="polite">正在打开你的照片收藏</p>
+      </section>
+      <section class="stage" aria-label="随机拍立得照片">
+        <div class="orbit" aria-hidden="true"></div>
+        <div id="stack" class="stack" aria-busy="true"></div>
+        <div id="placeholder" class="placeholder"><span>✧</span><p>A memory is on its way.</p></div>
+        <p class="stack-label"><span class="tiny-star">✦</span> A MOMENT, FOUND AGAIN.</p>
+      </section>
+      <aside class="margin-note" aria-hidden="true"><span class="note-star">✧</span><p>Some moments<br>find you again.</p><span class="note-line"></span><small>一张照片，一次重逢。</small></aside>
+    </main>
+    <footer class="footer">
+      <div class="footer-label">COLLECT MOMENTS,<br><strong>NOT THINGS.</strong></div>
+      <div class="progress"><span id="current">00</span><span class="progress-track"><i id="progress-fill"></i></span><span id="total">—</span><span class="progress-caption">MEMORIES</span></div>
+      <span class="footer-right">STAY CURIOUS <span>✦</span> KEEP WANDERING</span>
+    </footer>
+  </div>
+  <noscript><p class="noscript">请开启 JavaScript 来浏览随机照片。</p></noscript>
 </body>
-
 </html>
