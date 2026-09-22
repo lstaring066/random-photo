@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#141a19">
-  <meta name="description" content="在随机中，遇见美好。翻开一张照片，重逢一个值得珍藏的瞬间。">
-  <title>Random Memories · 遇见美好</title>
-  <link rel="stylesheet" href="style.css?v=20260922">
-  <script src="script.js?v=20260922" defer></script>
+  <meta name="description" content="和七七，重逢每个小美好。左右滑动，翻看七七的明信片。">
+  <title>Random Memories · 七七的小美好</title>
+  <link rel="stylesheet" href="style.css?v=20260922-qiqi2">
+  <script src="script.js?v=20260922-qiqi2" defer></script>
 </head>
 <body>
   <div class="backdrop" aria-hidden="true"></div>
@@ -20,19 +20,19 @@
     </header>
     <main class="experience">
       <section class="intro" aria-labelledby="heading">
-        <p class="eyebrow"><span></span> LET LIFE SURPRISE YOU</p>
-        <h1 id="heading">在随机中，<br>遇见<span class="serif">美好。</span></h1>
-        <p class="description">有些瞬间，值得再次遇见。<br>把下一张，交给偶然。</p>
+        <p class="eyebrow"><span></span> LITTLE DAYS WITH QIQI</p>
+        <h1 id="heading">和<span class="serif">七七，</span><br>重逢每个<br>小美好。</h1>
+        <p class="description">把七七的日常，收进一张张明信片。<br>轻轻一滑，可爱就在下一张。</p>
         <button id="btn" class="discover" type="button" disabled><span id="button-label">正在寻找回忆…</span><span class="button-arrow" aria-hidden="true">↗</span></button>
         <p id="status" class="status" role="status" aria-live="polite">正在打开你的照片收藏</p>
       </section>
-      <section class="stage" aria-label="随机拍立得照片">
+      <section class="stage" aria-label="七七的明信片相册">
         <div class="orbit" aria-hidden="true"></div>
-        <div id="stack" class="stack" aria-busy="true"></div>
+        <div id="stack" class="stack" aria-busy="true" tabindex="0" aria-label="七七的明信片，按左右方向键或拖动切换" aria-roledescription="轮播相册"></div>
         <div id="placeholder" class="placeholder"><span>✧</span><p>A memory is on its way.</p></div>
-        <p class="stack-label"><span class="tiny-star">✦</span> A MOMENT, FOUND AGAIN.</p>
+        <div class="fan-controls"><button id="previous" type="button" aria-label="上一张明信片" disabled>←</button><span>左右滑动 · 翻看七七</span><button id="next" type="button" aria-label="下一张明信片" disabled>→</button></div>
       </section>
-      <aside class="margin-note" aria-hidden="true"><span class="note-star">✧</span><p>Some moments<br>find you again.</p><span class="note-line"></span><small>一张照片，一次重逢。</small></aside>
+      <aside class="margin-note" aria-hidden="true"><span class="note-star">✧</span><p>Little paws.<br>Lovely days.</p><span class="note-line"></span><small>七七的每一天，都值得珍藏。</small></aside>
     </main>
     <footer class="footer">
       <div class="footer-label">COLLECT MOMENTS,<br><strong>NOT THINGS.</strong></div>

@@ -2,14 +2,6 @@
 // Existing project's public configuration. The database and Storage are unchanged.
 const supabaseUrl = "https://nrpedfcezmvrrjhhfihy.supabase.co";
 const supabaseKey = "sb_publishable_M9eL0D5OIW_NpOYkm8NaLw_d-o7bKHA";
-const button = document.getElementById("btn");
-const label = document.getElementById("button-label");
-const status = document.getElementById("status");
-const stack = document.getElementById("stack");
-const poses = ["translate(0px, 0px) rotate(-5deg) scale(1)", "translate(27px, -14px) rotate(5deg) scale(.96)", "translate(-23px, -28px) rotate(-11deg) scale(.92)"];
-let photos = [], bag = [], cards = [], failed = new Set(), lastDraw = null;
-let busy = false, shown = 0, direction = 1, prepared = null, initialized = false;
-
 function shuffle(items) {
   const result = [...items];
   for (let i = result.length - 1; i > 0; i--) {
@@ -17,15 +9,6 @@ function shuffle(items) {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
-}
-function draw() {
-  if (!bag.length) {
-    bag = shuffle(photos.filter(p => !failed.has(p.url)));
-    if (bag.length > 1 && bag[0].url === lastDraw) [bag[0], bag[1]] = [bag[1], bag[0]];
-  }
-  const photo = bag.shift();
-  if (photo) lastDraw = photo.url;
-  return photo;
 }
 function loadImage(url) {
   return new Promise((resolve, reject) => {
@@ -40,45 +23,6 @@ function loadImage(url) {
     img.decoding = "async";
     img.src = url;
   });
-}
-async function nextCard() {
-  for (let tries = 0; tries < photos.length; tries++) {
-    const photo = draw();
-    if (!photo) return null;
-    if (failed.has(photo.url)) continue;
-    try {
-      const img = await loadImage(photo.url);
-      const el = document.createElement("figure");
-      el.className = "polaroid"; el.dataset.photoId = String(photo.id);
-      const mat = document.createElement("div"); mat.className = "photo-mat";
-      img.alt = "随机回忆照片"; img.draggable = false; mat.append(img);
-      const caption = document.createElement("figcaption");
-      const words = document.createElement("span"); words.textContent = "a little moment of life";
-      const serial = document.createElement("small"); serial.textContent = "MEMORIES ✦";
-      caption.append(words, serial); el.append(mat, caption);
-      return {el, photo};
-    } catch { failed.add(photo.url); bag = bag.filter(p => p.url !== photo.url); }
-  }
-  return null;
-}
-function positionCards() {
-  cards.forEach((card, i) => {
-    card.el.style.transform = poses[i]; card.el.style.zIndex = String(10 - i);
-    card.el.setAttribute("aria-hidden", String(i !== 0));
-    card.el.querySelector("img").id = i === 0 ? "photo" : "";
-  });
-}
-function updateProgress() {
-  const total = Math.max(0, photos.length - failed.size);
-  const current = total ? ((shown - 1) % total) + 1 : 0;
-  document.getElementById("current").textContent = String(current).padStart(2, "0");
-  document.getElementById("total").textContent = String(total).padStart(2, "0");
-  document.getElementById("progress-fill").style.width = total ? `${current / total * 100}%` : "0%";
-  status.textContent = total === 1 ? "目前只有一张可用照片，新的美好即将加入。" : `共 ${total} 张回忆 · 一轮内不重复${failed.size ? " · 已跳过暂不可用的图片" : ""}`;
-}
-function setBusy(value) {
-  busy = value; button.disabled = value; stack.setAttribute("aria-busy", String(value));
-  label.textContent = value ? "正在寻找回忆…" : "✦ Discover";
 }
 async function readPhotos() {
   const rows = [];
@@ -95,65 +39,160 @@ async function readPhotos() {
   // Duplicate database rows pointing at the same image count as one memory.
   return [...new Map(rows.filter(p => typeof p.url === "string" && /^https?:\/\//i.test(p.url)).map(p => [p.url, p])).values()];
 }
+
+const button = document.getElementById('btn');
+const label = document.getElementById('button-label');
+const status = document.getElementById('status');
+const stack = document.getElementById('stack');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+let cards = [], active = 0, busy = false, initialized = false;
+let drag = null, suppressClick = false, wheelAmount = 0, wheelTime = 0;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function offsetFor(index) {
+  let offset = (index - active + cards.length) % cards.length;
+  if (offset > cards.length / 2) offset -= cards.length;
+  return offset;
+}
+function render(dragFraction = 0) {
+  const css = getComputedStyle(stack);
+  const step = parseFloat(css.getPropertyValue('--fan-step')) || 100;
+  const rise = parseFloat(css.getPropertyValue('--fan-rise')) || 23;
+  cards.forEach((card, index) => {
+    const offset = offsetFor(index);
+    const place = offset + dragFraction;
+    const distance = Math.abs(place);
+    card.el.style.transform = `translate(${place * step}px, ${distance * rise}px) rotate(${place * 10}deg) scale(${Math.max(.78, 1 - distance * .055)})`;
+    card.el.style.zIndex = String(20 - Math.round(distance * 3));
+    card.el.style.visibility = Math.abs(offset) <= 2 ? 'visible' : 'hidden';
+    card.el.inert = Math.abs(offset) > 2;
+    card.el.setAttribute('aria-hidden', String(Math.abs(offset) > 2));
+    card.el.setAttribute('aria-current', String(index === active));
+    card.el.tabIndex = Math.abs(offset) <= 2 ? 0 : -1;
+    if (index === active) card.img.id = 'photo'; else card.img.removeAttribute('id');
+  });
+}
+function updateProgress() {
+  document.getElementById('current').textContent = String(active + 1).padStart(2, '0');
+  document.getElementById('total').textContent = String(cards.length).padStart(2, '0');
+  document.getElementById('progress-fill').style.width = `${(active + 1) / cards.length * 100}%`;
+  status.textContent = cards.length > 1 ? `七七的 ${cards.length} 张明信片 · 左右滑动，慢慢看` : '七七的第一张明信片';
+}
+function setControls(loading = false) {
+  button.disabled = loading || (initialized && cards.length < 2);
+  previous.disabled = next.disabled = loading || !initialized || cards.length < 2;
+  label.textContent = loading ? '正在打开七七的相册…' : '✦ Discover';
+}
+function move(amount) {
+  if (!initialized || busy || cards.length < 2 || !amount) return;
+  busy = true;
+  active = (active + amount + cards.length) % cards.length;
+  render(); updateProgress();
+  // Card images are never replaced or removed while navigating.
+  setTimeout(() => { busy = false; }, reducedMotion.matches ? 0 : 570);
+}
 async function initialize() {
-  setBusy(true); status.textContent = "正在打开你的照片收藏";
+  if (busy) return;
+  busy = true; setControls(true); stack.setAttribute('aria-busy', 'true');
+  status.textContent = '正在把七七的日常装进明信片';
   try {
-    photos = await readPhotos(); bag = []; failed.clear(); lastDraw = null; shown = 0;
-    cards.forEach(c => c.el.remove()); cards = [];
-    if (!photos.length) throw new Error("Empty collection");
-    for (let i = 0; i < Math.min(3, photos.length); i++) {
-      if (i >= photos.length - failed.size) break;
-      const card = await nextCard();
-      if (!card) break;
-      cards.push(card); stack.append(card.el); positionCards();
-      document.getElementById("placeholder").hidden = true;
+    const photos = shuffle(await readPhotos());
+    if (!photos.length) throw new Error('Empty collection');
+    const loaded = new Array(photos.length);
+    let cursor = 0;
+    async function worker() {
+      while (cursor < photos.length) {
+        const i = cursor++;
+        try {
+          const img = await loadImage(photos[i].url);
+          await img.decode();
+          loaded[i] = {photo: photos[i], img};
+        } catch { /* Unavailable images are skipped without changing the backend. */ }
+      }
     }
-    if (!cards.length) throw new Error("No images available");
-    initialized = true; shown = 1; updateProgress(); setBusy(false);
-    if (photos.length - failed.size > 1) prepared = nextCard();
-    else button.disabled = true;
+    await Promise.all(Array.from({length: Math.min(4, photos.length)}, worker));
+    cards = loaded.filter(Boolean);
+    if (!cards.length) throw new Error('No available images');
+    stack.replaceChildren();
+    stack.classList.add('instant');
+    cards.forEach((card, i) => {
+      const el = document.createElement('figure');
+      el.className = 'polaroid';
+      el.dataset.photoId = String(card.photo.id);
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', `查看七七明信片 ${i + 1}`);
+      const mat = document.createElement('div'); mat.className = 'photo-mat';
+      card.img.alt = `七七的日常 · 明信片 ${i + 1}`;
+      card.img.draggable = false;
+      mat.append(card.img);
+      const caption = document.createElement('figcaption');
+      const words = document.createElement('span'); words.textContent = '七七的小美好';
+      const serial = document.createElement('small'); serial.textContent = `QIQI · ${String(i + 1).padStart(2, '0')}`;
+      caption.append(words, serial); el.append(mat, caption);
+      card.el = el;
+      el.addEventListener('click', () => { if (!suppressClick) move(offsetFor(i)); });
+      el.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {event.preventDefault(); move(offsetFor(i));}
+      });
+      stack.append(el);
+    });
+    active = 0; initialized = true; render(); updateProgress();
+    document.getElementById('placeholder').hidden = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => stack.classList.remove('instant')));
   } catch (error) {
-    console.warn("Unable to open memories:", error.message);
-    initialized = false; setBusy(false); label.textContent = "↻ 再试一次";
-    status.textContent = photos.length ? "照片暂时无法加载，请稍后重试。" : "暂时没有读到照片，请检查网络后重试。";
+    status.textContent = '七七的相册暂时没打开，请点击重试。';
+    console.warn('Unable to open Qiqi postcards:', error.message);
+  } finally {
+    busy = false; setControls(); stack.setAttribute('aria-busy', 'false');
+    if (!initialized) label.textContent = '↻ 再试一次';
   }
 }
-function animate(el, frames, options) {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return Promise.resolve();
-  return el.animate(frames, options).finished.catch(() => {});
+button.addEventListener('click', () => initialized ? move(1) : initialize());
+previous.addEventListener('click', () => move(-1));
+next.addEventListener('click', () => move(1));
+stack.addEventListener('keydown', event => {
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1);
+  }
+});
+stack.addEventListener('pointerdown', event => {
+  if (busy || !initialized || cards.length < 2 || event.button !== 0) return;
+  drag = {id:event.pointerId, x:event.clientX, y:event.clientY, dx:0, horizontal:false};
+  suppressClick = false;
+});
+stack.addEventListener('pointermove', event => {
+  if (!drag || event.pointerId !== drag.id) return;
+  const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+  if (!drag.horizontal) {
+    if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {drag = null; return;}
+    if (Math.abs(dx) < 8) return;
+    drag.horizontal = true; suppressClick = true;
+    stack.setPointerCapture(event.pointerId); stack.classList.add('dragging');
+  }
+  drag.dx = dx;
+  const step = parseFloat(getComputedStyle(stack).getPropertyValue('--fan-step'));
+  render(Math.max(-.95, Math.min(.95, dx / (step * 1.6))));
+});
+function endDrag(event, cancelled = false) {
+  if (!drag || event.pointerId !== drag.id) return;
+  const {dx, horizontal} = drag; drag = null;
+  stack.classList.remove('dragging');
+  if (stack.hasPointerCapture(event.pointerId)) stack.releasePointerCapture(event.pointerId);
+  if (horizontal) {
+    if (!cancelled && Math.abs(dx) >= 35) move(dx < 0 ? 1 : -1); else render();
+    setTimeout(() => {suppressClick = false;}, 100);
+  }
 }
-async function discover() {
+stack.addEventListener('pointerup', event => endDrag(event));
+stack.addEventListener('pointercancel', event => endDrag(event, true));
+stack.addEventListener('lostpointercapture', event => endDrag(event, true));
+stack.addEventListener('wheel', event => {
+  if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || cards.length < 2) return;
+  event.preventDefault();
   if (busy) return;
-  if (!initialized) return initialize();
-  setBusy(true);
-  try {
-    const incoming = await (prepared || nextCard()); prepared = null;
-    if (!incoming && cards.length < 2) throw new Error("No next image");
-    const outgoing = cards.shift();
-    outgoing.el.querySelector("img").removeAttribute("id");
-    const previous = cards.map(card => card.el.style.transform);
-    if (incoming) { cards.push(incoming); stack.append(incoming.el); }
-    positionCards(); outgoing.el.style.zIndex = "20"; outgoing.el.setAttribute("aria-hidden", "true");
-    const opts = {duration: 900, easing: "cubic-bezier(.22,.7,.18,1)"};
-    const moves = [animate(outgoing.el, [
-      {transform: poses[0], opacity: 1},
-      {transform: `translate(${direction * 95}px, -65px) rotate(${direction * 16}deg) scale(.94)`, opacity: 1, offset: .35},
-      {transform: `translate(${direction * 620}px, -170px) rotate(${direction * 42}deg) scale(.55)`, opacity: 0}
-    ], {duration: 820, easing: "cubic-bezier(.4,0,.7,.5)"})];
-    cards.forEach((card, i) => {
-      const isNew = card === incoming;
-      moves.push(animate(card.el, [
-        {transform: isNew ? `translate(${-direction * 330}px, -100px) rotate(${-direction * 25}deg) scale(.65)` : previous[i], opacity: isNew ? 0 : 1},
-        {transform: poses[i], opacity: 1}
-      ], {...opts, delay: isNew ? 160 : 80 + i * 60}));
-    });
-    await Promise.all(moves); outgoing.el.remove(); direction *= -1;
-    shown++; updateProgress();
-    if (photos.length - failed.size > 1) prepared = nextCard();
-  } catch (error) {
-    console.warn("Unable to change memory:", error.message);
-    status.textContent = "下一张照片暂时无法加载，点击重试。";
-  } finally { setBusy(false); if (photos.length - failed.size <= 1) button.disabled = true; }
-}
-button.addEventListener("click", discover);
+  if (Date.now() - wheelTime > 180) wheelAmount = 0;
+  wheelTime = Date.now(); wheelAmount += event.deltaX;
+  if (Math.abs(wheelAmount) > 45) {move(wheelAmount > 0 ? 1 : -1); wheelAmount = 0;}
+}, {passive:false});
+window.addEventListener('resize', () => {if (initialized) render();});
 initialize();
