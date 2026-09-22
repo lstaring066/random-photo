@@ -43,3 +43,30 @@ h1{font-size:clamp(34px,3.3vw,54px);line-height:1.55}
 @media(min-width:701px) and (max-width:1100px){.experience{grid-template-columns:32% 68%}.stack{width:230px;height:310px;--fan-step:62px;--fan-rise:18px}h1{font-size:34px}.description{font-size:10px;letter-spacing:1px}.discover{min-width:190px;padding:17px 21px}}
 @media(max-width:700px){.experience{display:flex;min-height:0;padding-top:26px}.stage{height:420px;padding-bottom:58px}.stack{width:205px;height:275px;--fan-step:42px;--fan-rise:16px}.intro h1{font-size:30px;line-height:1.5}.intro h1 br{display:none}.intro h1 br:last-of-type{display:block}.polaroid{padding:9px 9px 0}.polaroid figcaption{font-size:11px;height:46px}.polaroid figcaption small{font-size:7px;letter-spacing:0}.photo-mat{height:calc(100% - 46px)}.fan-controls{bottom:8px}.description{margin-bottom:17px}}
 @media(prefers-reduced-motion:reduce){.polaroid{transition:none!important}}
+/* Approved size B: desktop postcards 30% larger, with a tighter fan. */
+@media(min-width:701px){
+  .experience{padding:20px 0}
+  .stage{height:580px;min-height:0}
+  .stack{width:390px;height:500.5px;top:-24px;--fan-step:75px;--fan-rise:16px}
+  .fan-controls{bottom:-20px}
+  .polaroid{padding:16px 16px 0}
+  .polaroid figcaption{height:65px;font-size:16px}
+  .photo-mat{height:calc(100% - 65px)}
+  .polaroid figcaption small{font-size:10px}
+}
+@media(min-width:1500px){
+  .stage{height:610px}
+  .stack{width:442px;height:559px;top:-28px;--fan-step:85px;--fan-rise:16px}
+  .fan-controls{bottom:-25px}
+}
+@media(min-width:701px) and (max-height:800px){
+  .stage{height:520px}
+  .stack{width:338px;height:429px;top:-20px;--fan-step:65px;--fan-rise:12px}
+  .fan-controls{bottom:-12px}
+}
+@media(min-width:701px) and (max-width:1100px){
+  .stage{height:500px}
+  .stack{width:299px;height:403px;top:-20px;--fan-step:40px;--fan-rise:12px}
+  .polaroid figcaption{font-size:14px}
+  .polaroid figcaption small{font-size:8px}
+}
